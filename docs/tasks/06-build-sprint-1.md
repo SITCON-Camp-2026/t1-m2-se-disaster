@@ -25,9 +25,11 @@
 2. 預設使用既有 schema；只有 decision 說明缺少 domain meaning 時才擴充 family schema
 3. 顯示 source、status、updatedAt
 4. 顯示至少 3 種狀態，且每種狀態有簡短原因
-5. UI 對應至少 2 條 `AC-*`
+5. UI 對應至少 2 條完成條件（AC）
 6. 至少 1 個測試
 7. `pnpm build` 後首頁看得到成果
+
+如果 shared / released fixtures 不足以展示完成條件、狀態或 failure case，請補 `src/fixtures/workspace/` 的 normalized mock data，並在 `docs/data-contract.md` 說明。不要只渲染少量 starter rows 就算完成。
 
 ## 成果放哪裡
 
@@ -57,8 +59,9 @@
 
 - [ ] 主流程可操作
 - [ ] 首頁能看到主流程
-- [ ] 至少 2 條 AC 可展示，並寫出畫面 / path / 測試或文件
+- [ ] 至少 2 條完成條件（AC）可展示，並寫出畫面 / path / 測試或文件
 - [ ] UI 顯示 source / status / updatedAt
+- [ ] 若有補 workspace data，文件說明它支援哪個完成條件或狀態
 - [ ] 至少 1 個測試
 - [ ] `pnpm build` 成功
 - [ ] 一個 commit，建議訊息：`Implement main flow`

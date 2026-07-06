@@ -54,7 +54,7 @@ scope lock decision 要寫出 UI entry、data path、test target 和 out of scop
 - [ ] `docs/decisions.md` 有一筆 scope lock decision
 - [ ] 建立 3 到 5 個 issue 或 checklist item
 
-每個 task 至少寫：AC、資料來源、可能修改檔案、demo 會看到什麼、今天不做什麼。
+每個 task 至少寫：完成條件（AC）、資料來源、可能修改檔案、demo 會看到什麼、今天不做什麼。
 
 ## 停止條件
 

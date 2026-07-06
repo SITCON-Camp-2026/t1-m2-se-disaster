@@ -25,10 +25,10 @@
 2. demo URL 或本機入口
 3. 主流程從哪裡進入
 4. 資料從哪裡進來
-5. 目前完成哪些 AC
+5. 目前完成哪些完成條件（AC）
 6. 已知問題與限制
 7. 哪些地方不能自動推論，必須保留人工確認或 `needs_review`
-8. 下一位接手者可以做的一個小任務，且要來自未完成 AC、已知限制或 feedback
+8. 下一位接手者可以做的一個小任務，且要來自未完成條件、已知限制或 feedback
 
 ## 成果放哪裡
 
@@ -50,7 +50,7 @@
 - [ ] 寫出 demo 入口與 render path
 - [ ] 寫出主流程、fixture / adapter、test、known limits
 - [ ] `README.md` 若有啟動方式變更，需要更新
-- [ ] `docs/spec.md` 標記已完成與未完成 AC
+- [ ] `docs/spec.md` 標記已完成與未完成的完成條件
 - [ ] `docs/decisions.md` 至少有重要決策
 - [ ] 記錄最後驗證結果，例如 `pnpm build: pass`
 - [ ] 一個 commit，建議訊息：`Prepare handoff`

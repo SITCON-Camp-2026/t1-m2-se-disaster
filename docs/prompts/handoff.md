@@ -11,7 +11,7 @@
 3. 主流程在哪些檔案
 4. demo 從 src/app/App.tsx 如何進入
 5. 資料入口在哪裡
-6. 目前完成哪些 acceptance criteria
+6. 目前完成哪些完成條件（Acceptance Criteria，簡稱 AC）
 7. 已知問題與限制
 8. 下一位接手者可以做的一個小任務
 9. event injection 後有哪些資料或 schema 變更

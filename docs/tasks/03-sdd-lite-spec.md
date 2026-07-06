@@ -31,13 +31,15 @@ spec 至少包含：
 3. 主要操作流程
 4. input / output contract
 5. 狀態
-6. acceptance criteria，請編號成 `AC-1`
+6. 完成條件（Acceptance Criteria，簡稱 AC），請編號成 `AC-1`
 7. out of scope
 8. failure / uncertain cases
 9. human confirmation points
 10. demo path
 
 roles 是 demo 裡的責任視角，不是登入、權限或帳號系統。output 若只是 UI 顯示，也要明說。
+
+每條完成條件（AC）都要想一下：需要哪種資料才看得出來？如果 starter fixture 太少，請在 data contract 寫出下午需要補哪些 workspace mock data。
 
 ## 成果放哪裡
 
@@ -71,8 +73,9 @@ roles 是 demo 裡的責任視角，不是登入、權限或帳號系統。outpu
 - [ ] `docs/data-contract.md` 寫出 input / output
 - [ ] `docs/user-flow.md` 有主流程
 - [ ] spec 寫清楚 demo 入口
-- [ ] 至少 4 條 `AC-*`
+- [ ] 至少 4 條完成條件（AC），例如 `AC-1`
 - [ ] 至少 3 個 failure / uncertain cases
+- [ ] 寫出哪些資料情境會用來展示完成條件
 - [ ] `docs/ai-log.md` 紀錄 AI 協作
 
 ## 停止條件

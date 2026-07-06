@@ -36,7 +36,7 @@ src/app/App.tsx
 | adapter             | `src/adapters/`                                     | 視情況                 | event injection 後通常要接到 app 或測試         |
 | schema / type       | `src/contracts/`                                    | 視情況                 | 可擴充 family schema，不可任意改 `CommonRecord` |
 | 測試                | `tests/`                                            | 否                     | 用來驗證 schema、adapter、UI 行為               |
-| spec                | `docs/spec.md`                                      | 否                     | 說明需求與 AC，但不能取代 demo                  |
+| spec                | `docs/spec.md`                                      | 否                     | 說明需求與完成條件（AC），但不能取代 demo       |
 | data contract       | `docs/data-contract.md`                             | 否                     | 說明資料輸入輸出與 schema 取捨                  |
 | decision log        | `docs/decisions.md`                                 | 否                     | 記錄重大工程取捨                                |
 | AI log              | `docs/ai-log.md`                                    | 否                     | 記錄 AI 協作與人類判斷                          |

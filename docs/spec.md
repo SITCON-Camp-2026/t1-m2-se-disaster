@@ -19,7 +19,7 @@
 
 ## States
 
-## Acceptance criteria
+## 完成條件（Acceptance Criteria，簡稱 AC）
 
 - [ ] AC-01:
 - [ ] AC-02:

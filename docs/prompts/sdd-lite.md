@@ -11,7 +11,7 @@
 3. Main user flow
 4. Input / Output contract
 5. States
-6. 4 條 acceptance criteria
+6. 4 條完成條件（Acceptance Criteria，簡稱 AC）
 7. 3 個 failure / uncertain cases
 8. Out of scope
 9. Human confirmation points

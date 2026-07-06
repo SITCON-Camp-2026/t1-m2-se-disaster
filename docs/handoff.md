@@ -7,7 +7,7 @@ pnpm install
 pnpm run dev
 ```
 
-## Completed acceptance criteria
+## 已完成的完成條件（AC）
 
 ## Known issues
 
