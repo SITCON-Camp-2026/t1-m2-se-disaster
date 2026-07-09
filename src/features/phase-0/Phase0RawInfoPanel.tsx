@@ -5,12 +5,8 @@ import type { Phase0MessyRecord } from "./phase0-types";
 
 export function Phase0RawInfoPanel({
   records,
-  selectedRecordId,
-  onSelect,
 }: {
   records: Phase0MessyRecord[];
-  selectedRecordId: string;
-  onSelect: (recordId: string) => void;
 }) {
   return (
     <div className="phase0-raw">
@@ -24,10 +20,7 @@ export function Phase0RawInfoPanel({
 
       <div className="grid">
         {records.map((record) => (
-          <article
-            className={`record-card ${record.id === selectedRecordId ? "record-card--selected" : ""}`}
-            key={record.id}
-          >
+          <article className="record-card" key={record.id}>
             <div className="record-card__header">
               <h3>{record.id}</h3>
               <StatusBadge status={record.verificationStatus} />
@@ -37,9 +30,6 @@ export function Phase0RawInfoPanel({
               <SourceLabel sourceType={record.sourceType} />
               <span>更新：{formatDateTime(record.updatedAt)}</span>
             </div>
-            <button type="button" onClick={() => onSelect(record.id)}>
-              送到整理工作台
-            </button>
           </article>
         ))}
       </div>

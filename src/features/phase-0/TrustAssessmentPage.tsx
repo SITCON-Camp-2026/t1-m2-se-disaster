@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
+import type { V1ReviewItem } from "../v1/v1-types";
 import type { Phase0MessyRecord } from "./phase0-types";
 import {
   hasInternalContrast,
@@ -19,21 +20,6 @@ type TrustAssessment = {
   canBecomeTask: boolean;
   nextStep: string;
   record: Phase0MessyRecord;
-};
-
-type VolunteerTask = {
-  id: string;
-  title: string;
-  summary: string;
-  situation: string;
-  status: string;
-  taskType: string;
-  skill: string;
-  location: string;
-  timeSlot: string;
-  item: string;
-  createdAt: string;
-  priority: number;
 };
 
 function assessTrust(record: Phase0MessyRecord): TrustAssessment {
@@ -142,17 +128,54 @@ function assessTrust(record: Phase0MessyRecord): TrustAssessment {
   };
 }
 
+function normalizeSituationForReview(situation: string) {
+  if (situation === "需要食物") {
+    return "需要食物或飲水";
+  }
+
+  if (situation === "需要清理淤泥") {
+    return "需要清理協助";
+  }
+
+  if (situation === "需要心理支持") {
+    return "其他";
+  }
+
+  return situation;
+}
+
+function normalizeSupportTypeForReview(taskType: string, skill: string) {
+  if (skill.includes("醫療")) {
+    return "醫療人員";
+  }
+
+  if (taskType.includes("交通")) {
+    return "交通接送";
+  }
+
+  if (taskType.includes("心理") || skill.includes("心理")) {
+    return "心理支持";
+  }
+
+  return "一般志工";
+}
+
 export function TrustAssessmentPage({
   records,
+  pendingReviewItems = [],
+  approvedReviewItems = [],
+  onSubmitForReview = () => undefined,
 }: {
   records: Phase0MessyRecord[];
+  pendingReviewItems?: V1ReviewItem[];
+  approvedReviewItems?: V1ReviewItem[];
+  onSubmitForReview?: (item: V1ReviewItem) => void;
 }) {
   const assessments = records.map(assessTrust);
   const mediumCount = assessments.filter(
     (item) => item.level === "medium",
   ).length;
   const lowCount = assessments.filter((item) => item.level === "low").length;
-  const [tasks, setTasks] = useState<VolunteerTask[]>([]);
   const [situation, setSituation] = useState("需要食物");
   const [status, setStatus] = useState("仍需要協助");
   const [taskType, setTaskType] = useState("人力幫助");
@@ -165,8 +188,9 @@ export function TrustAssessmentPage({
   const [otherSituation, setOtherSituation] = useState("");
   const [otherSkill, setOtherSkill] = useState("");
   const [note, setNote] = useState("");
+  const [lastSubmittedId, setLastSubmittedId] = useState<string | null>(null);
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const resolvedSituation =
@@ -188,40 +212,42 @@ export function TrustAssessmentPage({
       return;
     }
 
-    const createdAt = new Date().toLocaleString("zh-TW", {
-      hour12: false,
-    });
+    const submittedAt = new Date();
+    const id = `FORM-${submittedAt.getTime()}`;
+    const lifeSafety =
+      resolvedSituation.includes("醫療") ||
+      trimmedNote.includes("受困") ||
+      trimmedNote.includes("失聯") ||
+      trimmedNote.includes("生命") ||
+      trimmedNote.includes("危險");
+    const rawText = [
+      `現場情況：${resolvedSituation}`,
+      `目前狀況：${status}`,
+      `需要的協助類型：${taskType}`,
+      `需要的協助專長：${resolvedSkill}`,
+      `地點：${trimmedLocation || "未填寫"}`,
+      `希望協助時間：${timeLabel}`,
+      `需要的物資或協助：${trimmedItem || "未填寫"}`,
+      `補充說明：${trimmedNote || "未填寫"}`,
+    ].join("；");
 
-    const priorityScore =
-      (status === "仍需要協助"
-        ? 2
-        : status === "已有人來但仍需要協助"
-          ? 1
-          : 0) +
-      (resolvedSituation.includes("醫療") ||
-      resolvedSituation.includes("交通") ||
-      resolvedSituation.includes("住宿")
-        ? 1
-        : 0);
-
-    const newTask: VolunteerTask = {
-      id: `${Date.now()}`,
-      title: `${resolvedSituation}｜${resolvedSkill}`,
-      summary:
-        trimmedNote ||
-        `現場狀況：${resolvedSituation}；所需特長：${resolvedSkill}`,
-      situation: resolvedSituation,
-      status,
-      taskType,
-      skill: resolvedSkill,
-      location: trimmedLocation || "未填寫",
-      timeSlot: timeLabel,
-      item: trimmedItem || "未填寫",
-      createdAt,
-      priority: priorityScore,
+    const newSubmission: V1ReviewItem = {
+      id,
+      rawText,
+      situation: normalizeSituationForReview(resolvedSituation),
+      supportType: normalizeSupportTypeForReview(taskType, resolvedSkill),
+      location: trimmedLocation,
+      duration: timeLabel,
+      note: trimmedNote,
+      lifeSafety,
+      sourceType: "survivor_form",
+      verificationStatus: "needs_review",
+      updatedAt: submittedAt.toISOString(),
+      originLabel: "災民現場回報表單",
     };
 
-    setTasks((currentTasks) => [newTask, ...currentTasks]);
+    onSubmitForReview(newSubmission);
+    setLastSubmittedId(id);
     setSituation("需要食物");
     setStatus("仍需要協助");
     setTaskType("人力幫助");
@@ -235,8 +261,6 @@ export function TrustAssessmentPage({
     setOtherSkill("");
     setNote("");
   }
-
-  const sortedTasks = [...tasks].sort((a, b) => b.priority - a.priority);
 
   return (
     <section className="trust-page">
@@ -264,31 +288,30 @@ export function TrustAssessmentPage({
       </div>
 
       <div className="trust-page__layout">
-        <aside className="trust-page__tasks" aria-label="志工任務欄">
+        <aside className="trust-page__tasks" aria-label="審核中表單">
           <div className="trust-page__tasks-header">
-            <h3>志工任務欄</h3>
-            <p>左側會依序顯示目前收到的需求，方便志工直接查看。</p>
+            <h3>審核中</h3>
+            <p>
+              災民送出的表單會先留在這裡，等待資訊整理者到 v1
+              工作台審核；不會直接變成志工任務。
+            </p>
           </div>
-          {tasks.length === 0 ? (
+          {pendingReviewItems.length === 0 ? (
             <div className="trust-page__empty">
-              目前還沒有任務，請先由右側表單新增。
+              目前沒有審核中表單，災民送出後會先停在這裡。
             </div>
           ) : (
             <ul className="task-list">
-              {sortedTasks.map((task) => (
+              {pendingReviewItems.map((task) => (
                 <li className="task-card" key={task.id}>
                   <div className="task-card__header">
-                    <strong>{task.title}</strong>
-                    <span>{task.createdAt}</span>
+                    <strong>{task.situation}</strong>
+                    <span>審核中</span>
                   </div>
                   <span className="task-priority">
-                    {task.priority >= 3
-                      ? "高急迫度"
-                      : task.priority === 2
-                        ? "中急迫度"
-                        : "低急迫度"}
+                    審核中，尚未進入正式任務欄
                   </span>
-                  <p>{task.summary}</p>
+                  <p>{task.note || task.rawText}</p>
                   <dl className="task-card__meta">
                     <div>
                       <dt>現場情況</dt>
@@ -296,39 +319,49 @@ export function TrustAssessmentPage({
                     </div>
                     <div>
                       <dt>需要的協助類型</dt>
-                      <dd>{task.taskType}</dd>
+                      <dd>{task.supportType}</dd>
                     </div>
                     <div>
-                      <dt>目前狀況</dt>
-                      <dd>{task.status}</dd>
-                    </div>
-                    <div>
-                      <dt>所需特長</dt>
-                      <dd>{task.skill}</dd>
-                    </div>
-                    <div>
-                      <dt>地點</dt>
-                      <dd>{task.location}</dd>
+                      <dt>地點線索</dt>
+                      <dd>{task.location || "未填寫"}</dd>
                     </div>
                     <div>
                       <dt>時間</dt>
-                      <dd>{task.timeSlot}</dd>
+                      <dd>{task.duration || "未填寫"}</dd>
                     </div>
                     <div>
-                      <dt>需要的物資</dt>
-                      <dd>{task.item}</dd>
+                      <dt>生命安全</dt>
+                      <dd>{task.lifeSafety ? "可能相關" : "未標示"}</dd>
                     </div>
                   </dl>
                 </li>
               ))}
             </ul>
           )}
+
+          {approvedReviewItems.length > 0 ? (
+            <div className="reviewed-task-panel">
+              <h4>已審核任務</h4>
+              <ul className="task-list">
+                {approvedReviewItems.map((task) => (
+                  <li className="task-card" key={task.id}>
+                    <div className="task-card__header">
+                      <strong>{task.situation}</strong>
+                      <span>已審核</span>
+                    </div>
+                    <span className="task-priority">正式任務，尚未派工</span>
+                    <p>{task.rawText}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </aside>
 
-        <section className="trust-page__form" aria-label="難民現場回報表單">
-          <h3>難民現場回報</h3>
+        <section className="trust-page__form" aria-label="災民現場回報表單">
+          <h3>災民現場回報</h3>
           <p>
-            請描述你目前的狀況與需要的協助，志工會在旁邊查看，決定怎麼支援你。
+            請描述你目前的狀況與需要的協助。送出後會先由資訊整理者審核，不會直接派工。
           </p>
           <form onSubmit={handleSubmit} className="intake-form">
             <label className="field">
@@ -493,8 +526,13 @@ export function TrustAssessmentPage({
             </label>
 
             <button type="submit" className="submit-button">
-              新增到任務欄
+              送出審核
             </button>
+            {lastSubmittedId ? (
+              <p className="form-status" role="status">
+                已送出審核：{lastSubmittedId}
+              </p>
+            ) : null}
           </form>
         </section>
       </div>
