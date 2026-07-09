@@ -3,12 +3,14 @@ import messyReports from "../fixtures/phase-0/messy-reports.json";
 import { EmptyState } from "../components/EmptyState";
 import { Phase0RawInfoPanel } from "../features/phase-0/Phase0RawInfoPanel";
 import { Phase0Workbench } from "../features/phase-0/Phase0Workbench";
+import { TrustAssessmentPage } from "../features/phase-0/TrustAssessmentPage";
 import type { Phase0MessyRecord } from "../features/phase-0/phase0-types";
 
-type TabKey = "raw" | "workbench";
+type TabKey = "raw" | "workbench" | "trust";
 
 const tabs: Array<{ key: TabKey; label: string }> = [
   { key: "raw", label: "原始資訊" },
+  { key: "trust", label: "可信度判斷" },
   { key: "workbench", label: "整理工作台" },
 ];
 
@@ -28,12 +30,7 @@ export function App() {
   return (
     <main className="layout">
       <header className="hero">
-        <p className="eyebrow">SITCON Camp 2026</p>
         <h1>災害資訊整理工作台</h1>
-        <p>
-          第一階段先用 coding agent
-          做出可展示的前端原型，再從成果中看見資料品質、角色、狀態與來源的限制。
-        </p>
       </header>
 
       <nav className="tabs" aria-label="第一階段工作區">
@@ -58,6 +55,8 @@ export function App() {
             selectedRecordId={selectedRecordId}
             onSelect={selectForWorkbench}
           />
+        ) : activeTab === "trust" ? (
+          <TrustAssessmentPage records={phase0Records} />
         ) : (
           <Phase0Workbench
             records={phase0Records}

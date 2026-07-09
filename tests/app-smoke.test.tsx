@@ -45,6 +45,66 @@ describe("App", () => {
     expect(screen.getAllByText("未查核").length).toBeGreaterThan(0);
   });
 
+  it("shows a trust assessment page for the messy reports", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "可信度判斷" }));
+
+    expect(
+      screen.getByRole("heading", {
+        name: /先看來源與查核狀態，再判斷這筆資訊能不能當作可採用線索。/,
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("建議狀態")).toBeInTheDocument();
+    expect(screen.getByText("M-001")).toBeInTheDocument();
+  });
+
+  it("shows a task type selector for volunteers", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "可信度判斷" }));
+
+    expect(screen.getByLabelText("志工任務類型")).toBeInTheDocument();
+  });
+
+  it("sorts volunteer tasks by trustworthiness and realism", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "可信度判斷" }));
+
+    fireEvent.change(screen.getByLabelText("現場情況"), {
+      target: { value: "需要醫療協助" },
+    });
+    fireEvent.change(screen.getByLabelText("信心程度"), {
+      target: { value: "高" },
+    });
+    fireEvent.change(screen.getByLabelText("建議志工特長"), {
+      target: { value: "醫療支援" },
+    });
+    fireEvent.change(screen.getByLabelText("補充說明"), {
+      target: { value: "大樓二樓，地點明確，現在需要立即協助" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "新增到任務欄" }));
+
+    fireEvent.change(screen.getByLabelText("現場情況"), {
+      target: { value: "需要食物" },
+    });
+    fireEvent.change(screen.getByLabelText("信心程度"), {
+      target: { value: "低" },
+    });
+    fireEvent.change(screen.getByLabelText("建議志工特長"), {
+      target: { value: "搬運" },
+    });
+    fireEvent.change(screen.getByLabelText("補充說明"), {
+      target: { value: "不確定" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "新增到任務欄" }));
+
+    const taskTitles = screen.getAllByRole("listitem").map((item) => item.textContent);
+    expect(taskTitles[0]).toContain("需要醫療協助");
+    expect(taskTitles[0]).toContain("高可信度");
+  });
+
   it("keeps draft CRUD as learner work instead of starter output", () => {
     render(<App />);
 
