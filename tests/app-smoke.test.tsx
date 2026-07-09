@@ -59,15 +59,15 @@ describe("App", () => {
     expect(screen.getByText("M-001")).toBeInTheDocument();
   });
 
-  it("shows a task type selector for volunteers", () => {
+  it("shows an assistance type selector for disaster survivors", () => {
     render(<App />);
 
     fireEvent.click(screen.getByRole("button", { name: "可信度判斷" }));
 
-    expect(screen.getByLabelText("志工任務類型")).toBeInTheDocument();
+    expect(screen.getByLabelText("需要的協助類型")).toBeInTheDocument();
   });
 
-  it("sorts volunteer tasks by trustworthiness and realism", () => {
+  it("sorts volunteer tasks by urgency", () => {
     render(<App />);
 
     fireEvent.click(screen.getByRole("button", { name: "可信度判斷" }));
@@ -75,10 +75,10 @@ describe("App", () => {
     fireEvent.change(screen.getByLabelText("現場情況"), {
       target: { value: "需要醫療協助" },
     });
-    fireEvent.change(screen.getByLabelText("信心程度"), {
-      target: { value: "高" },
+    fireEvent.change(screen.getByLabelText("目前狀況"), {
+      target: { value: "仍需要協助" },
     });
-    fireEvent.change(screen.getByLabelText("建議志工特長"), {
+    fireEvent.change(screen.getByLabelText("需要的協助專長"), {
       target: { value: "醫療支援" },
     });
     fireEvent.change(screen.getByLabelText("補充說明"), {
@@ -89,10 +89,10 @@ describe("App", () => {
     fireEvent.change(screen.getByLabelText("現場情況"), {
       target: { value: "需要食物" },
     });
-    fireEvent.change(screen.getByLabelText("信心程度"), {
-      target: { value: "低" },
+    fireEvent.change(screen.getByLabelText("目前狀況"), {
+      target: { value: "狀況已緩解" },
     });
-    fireEvent.change(screen.getByLabelText("建議志工特長"), {
+    fireEvent.change(screen.getByLabelText("需要的協助專長"), {
       target: { value: "搬運" },
     });
     fireEvent.change(screen.getByLabelText("補充說明"), {
@@ -100,9 +100,11 @@ describe("App", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "新增到任務欄" }));
 
-    const taskTitles = screen.getAllByRole("listitem").map((item) => item.textContent);
+    const taskTitles = screen
+      .getAllByRole("listitem")
+      .map((item) => item.textContent);
     expect(taskTitles[0]).toContain("需要醫療協助");
-    expect(taskTitles[0]).toContain("高可信度");
+    expect(taskTitles[0]).toContain("高急迫度");
   });
 
   it("keeps draft CRUD as learner work instead of starter output", () => {

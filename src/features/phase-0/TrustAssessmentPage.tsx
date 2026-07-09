@@ -26,7 +26,8 @@ type VolunteerTask = {
   title: string;
   summary: string;
   situation: string;
-  confidence: string;
+  status: string;
+  taskType: string;
   skill: string;
   location: string;
   timeSlot: string;
@@ -153,7 +154,7 @@ export function TrustAssessmentPage({
   const lowCount = assessments.filter((item) => item.level === "low").length;
   const [tasks, setTasks] = useState<VolunteerTask[]>([]);
   const [situation, setSituation] = useState("需要食物");
-  const [confidence, setConfidence] = useState("中");
+  const [status, setStatus] = useState("仍需要協助");
   const [taskType, setTaskType] = useState("人力幫助");
   const [skill, setSkill] = useState("搬運");
   const [location, setLocation] = useState("");
@@ -169,9 +170,7 @@ export function TrustAssessmentPage({
     event.preventDefault();
 
     const resolvedSituation =
-      situation === "其他"
-        ? otherSituation.trim() || "其他"
-        : situation;
+      situation === "其他" ? otherSituation.trim() || "其他" : situation;
     const resolvedSkill =
       skill === "其他" ? otherSkill.trim() || "其他" : skill;
     const trimmedLocation = location.trim();
@@ -194,17 +193,26 @@ export function TrustAssessmentPage({
     });
 
     const priorityScore =
-      (confidence === "高" ? 2 : confidence === "中" ? 1 : 0) +
-      (resolvedSituation.includes("醫療") || resolvedSituation.includes("交通") || resolvedSituation.includes("住宿") ? 1 : 0) +
-      (trimmedNote && trimmedNote.length > 6 ? 1 : 0);
+      (status === "仍需要協助"
+        ? 2
+        : status === "已有人來但仍需要協助"
+          ? 1
+          : 0) +
+      (resolvedSituation.includes("醫療") ||
+      resolvedSituation.includes("交通") ||
+      resolvedSituation.includes("住宿")
+        ? 1
+        : 0);
 
     const newTask: VolunteerTask = {
       id: `${Date.now()}`,
       title: `${resolvedSituation}｜${resolvedSkill}`,
       summary:
-        trimmedNote || `現場狀況：${resolvedSituation}；所需特長：${resolvedSkill}`,
+        trimmedNote ||
+        `現場狀況：${resolvedSituation}；所需特長：${resolvedSkill}`,
       situation: resolvedSituation,
-      confidence,
+      status,
+      taskType,
       skill: resolvedSkill,
       location: trimmedLocation || "未填寫",
       timeSlot: timeLabel,
@@ -215,7 +223,7 @@ export function TrustAssessmentPage({
 
     setTasks((currentTasks) => [newTask, ...currentTasks]);
     setSituation("需要食物");
-    setConfidence("中");
+    setStatus("仍需要協助");
     setTaskType("人力幫助");
     setSkill("搬運");
     setLocation("");
@@ -274,7 +282,11 @@ export function TrustAssessmentPage({
                     <span>{task.createdAt}</span>
                   </div>
                   <span className="task-priority">
-                    {task.priority >= 3 ? "高可信度" : task.priority === 2 ? "中可信度" : "低可信度"}
+                    {task.priority >= 3
+                      ? "高急迫度"
+                      : task.priority === 2
+                        ? "中急迫度"
+                        : "低急迫度"}
                   </span>
                   <p>{task.summary}</p>
                   <dl className="task-card__meta">
@@ -283,8 +295,12 @@ export function TrustAssessmentPage({
                       <dd>{task.situation}</dd>
                     </div>
                     <div>
-                      <dt>信心程度</dt>
-                      <dd>{task.confidence}</dd>
+                      <dt>需要的協助類型</dt>
+                      <dd>{task.taskType}</dd>
+                    </div>
+                    <div>
+                      <dt>目前狀況</dt>
+                      <dd>{task.status}</dd>
                     </div>
                     <div>
                       <dt>所需特長</dt>
@@ -299,7 +315,7 @@ export function TrustAssessmentPage({
                       <dd>{task.timeSlot}</dd>
                     </div>
                     <div>
-                      <dt>要帶的東西</dt>
+                      <dt>需要的物資</dt>
                       <dd>{task.item}</dd>
                     </div>
                   </dl>
@@ -311,7 +327,9 @@ export function TrustAssessmentPage({
 
         <section className="trust-page__form" aria-label="難民現場回報表單">
           <h3>難民現場回報</h3>
-          <p>請用下列選項快速填寫現場狀況，方便志工分派支援。</p>
+          <p>
+            請描述你目前的狀況與需要的協助，志工會在旁邊查看，決定怎麼支援你。
+          </p>
           <form onSubmit={handleSubmit} className="intake-form">
             <label className="field">
               <span>現場情況</span>
@@ -340,23 +358,25 @@ export function TrustAssessmentPage({
             ) : null}
 
             <label className="field">
-              <span>信心程度</span>
+              <span>目前狀況</span>
               <select
-                value={confidence}
-                onChange={(event) => setConfidence(event.target.value)}
+                value={status}
+                onChange={(event) => setStatus(event.target.value)}
               >
-                <option value="高">高</option>
-                <option value="中">中</option>
-                <option value="低">低</option>
+                <option value="仍需要協助">仍需要協助</option>
+                <option value="已有人來但仍需要協助">
+                  已有人來但仍需要協助
+                </option>
+                <option value="狀況已緩解">狀況已緩解</option>
               </select>
             </label>
 
             <label className="field">
-              <span>志工任務類型</span>
+              <span>需要的協助類型</span>
               <select
                 value={taskType}
                 onChange={(event) => setTaskType(event.target.value)}
-                aria-label="志工任務類型"
+                aria-label="需要的協助類型"
               >
                 <option value="人力幫助">人力幫助</option>
                 <option value="心理幫助">心理幫助</option>
@@ -366,7 +386,7 @@ export function TrustAssessmentPage({
             </label>
 
             <label className="field">
-              <span>建議志工特長</span>
+              <span>需要的協助專長</span>
               <select
                 value={skill}
                 onChange={(event) => setSkill(event.target.value)}
@@ -400,7 +420,7 @@ export function TrustAssessmentPage({
             </label>
 
             <label className="field">
-              <span>可以來幫忙的時間</span>
+              <span>希望什麼時候得到協助</span>
               <div className="time-grid">
                 <label className="field field--inline">
                   <span>日期</span>
@@ -417,7 +437,10 @@ export function TrustAssessmentPage({
                     onChange={(event) => setStartTime(event.target.value)}
                   >
                     {Array.from({ length: 48 }, (_, index) => {
-                      const hours = String(Math.floor(index / 2)).padStart(2, "0");
+                      const hours = String(Math.floor(index / 2)).padStart(
+                        2,
+                        "0",
+                      );
                       const minutes = index % 2 === 0 ? "00" : "30";
                       return `${hours}:${minutes}`;
                     }).map((timeValue) => (
@@ -434,7 +457,10 @@ export function TrustAssessmentPage({
                     onChange={(event) => setEndTime(event.target.value)}
                   >
                     {Array.from({ length: 48 }, (_, index) => {
-                      const hours = String(Math.floor(index / 2)).padStart(2, "0");
+                      const hours = String(Math.floor(index / 2)).padStart(
+                        2,
+                        "0",
+                      );
                       const minutes = index % 2 === 0 ? "00" : "30";
                       return `${hours}:${minutes}`;
                     }).map((timeValue) => (
@@ -448,7 +474,7 @@ export function TrustAssessmentPage({
             </label>
 
             <label className="field">
-              <span>要來幫忙什麼東西</span>
+              <span>需要哪些物資或協助</span>
               <input
                 value={item}
                 onChange={(event) => setItem(event.target.value)}
